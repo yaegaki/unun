@@ -98,5 +98,9 @@ def make_wordcloud(path, font, background_color, contour_color):
 
         wordcloud.to_file('./wc/{}-{}.png'.format(file_name_without_ext, desc))
 
+# 出力先ディレクトリがなければ作る
+if not os.path.isdir('./wc'):
+    os.makedirs('./wc')
+
 for file in files:
     make_wordcloud(file, sys.argv[1], 'white', 'hsl(193, 96%, 82%)')
