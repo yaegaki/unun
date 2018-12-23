@@ -20,18 +20,13 @@ vocabulary_dic = vocabulary.get_vocabulary_dic()
 print('calc vocabulary use rate.')
 vocabulary_use_rate = vocabulary.calc_total_use_rate(vocabulary_dic)
 
-# 全体の6割以上で使用されているものはストップワードとする
-stop_words = set([keyword for keyword, rate in vocabulary_use_rate.items() if rate > 0.6])
-# デバッグ用
-# print(stop_words)
-
-
 mask_image_pathes = [
     './iori_mask.png',
     './mokotaiori_mask.png',
 ]
 
 masks = [np.array(Image.open(f)) for f in mask_image_pathes]
+
 
 def get_keywords_text(keywords):
     # ランダムにしておかないとなぜか同じ単語が近い位置に出てきてしまうことがあるのでその対策
@@ -41,27 +36,36 @@ def get_keywords_text(keywords):
     return ' '.join(keywords)
 
 settings = [
-    [set(), masks[0], 'all'],
-    [stop_words, masks[1], 'part'],
+    # [enable_filter, mask, output_prefix]
+    [False, masks[0], 'all'],
+    [True, masks[1], 'part'],
 ]
-
 
 
 def make_wordcloud(path, vocabulary, font, background_color, contour_color):
     print('start wordcloud for {}.'.format(path))
-    
+
     keywords = []
     for keyword, count in vocabulary.items():
         keywords.extend([keyword] * count)
 
     keywords_text = get_keywords_text(keywords)
     file_name_without_ext = os.path.splitext(os.path.basename(path))[0]
-    
 
     for setting in settings:
-        sw = setting[0]
+        enable_filter = setting[0]
         mask = setting[1]
         desc = setting[2]
+
+        sw = set()
+        if enable_filter:
+            total_keywords_count = len(keywords)
+            for keyword, count in vocabulary.items():
+                # 今回の出現率と全体での出現率の比
+                local_per_global = (count / total_keywords_count) / vocabulary_use_rate[keyword]
+                # 比が二倍より小さい場合は他の放送でもよく出ているものとして扱う
+                if local_per_global < 2:
+                    sw.add(keyword)
 
         # マスク画像使うとそのサイズになるのでwidthとheightは指定しない
         wordcloud = WordCloud(

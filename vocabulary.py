@@ -63,24 +63,28 @@ def flatten_vocabulary_dic(vocabulary_dic):
 # キーワードが配信全体でどれだけ使用されているかを調べる
 def calc_total_use_rate(vocabulary_dic):
     # 配信回数
-    total_num = len(vocabulary_dic)
-    if total_num == 0:
+    total_key_count = len(vocabulary_dic)
+    if total_key_count == 0:
         return {}
 
     dic = {}
     for _, vocabulary in vocabulary_dic.items():
-        eixsts_set = set()
+        # ボキャブラリ内の全単語の全出現数
+        total_count = 0
+        for _, count in vocabulary.items():
+            total_count += count
+
         for keyword, count in vocabulary.items():
-            if not keyword in eixsts_set:
-                eixsts_set.add(keyword)
-                if keyword in dic:
-                    dic[keyword] += 1
-                else:
-                    dic[keyword] = 1
+            # 全コメントの内、どれくらいを占めているか
+            rate = count / total_count
+            if keyword in dic:
+                dic[keyword] = dic[keyword] + rate
+            else:
+                dic[keyword] = rate
 
 
     result = {}
-    for keyword, count in dic.items():
-        result[keyword] = count / total_num
+    for keyword, rate in dic.items():
+        result[keyword] = rate / total_key_count
 
     return result
