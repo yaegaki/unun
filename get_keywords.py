@@ -12,7 +12,6 @@ def check_accept(word, cols, accept_part):
 
     return part in accept_part
 
-
 def get_keywords(mecab, path, accept_part=['名詞', '形容詞']):
     with codecs.open(path, encoding='utf-8') as f:
         messages = json.loads(f.read())

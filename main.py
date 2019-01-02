@@ -37,7 +37,7 @@ def get_keywords_text(keywords):
 
 settings = [
     # [enable_filter, mask, output_prefix]
-    [False, masks[0], 'all'],
+    # [False, masks[0], 'all'],
     [True, masks[1], 'part'],
 ]
 

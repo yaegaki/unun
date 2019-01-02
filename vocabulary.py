@@ -5,8 +5,6 @@ import codecs
 
 from get_keywords import get_keywords
 
-files = [os.path.join('livechat', f) for f in os.listdir('livechat')
-    if os.path.isfile(os.path.join('livechat', f))]
 
 # ストップワード
 # このURLのものを使用: https://qiita.com/kenmatsu4/items/9b6ac74f831443d29074
@@ -24,13 +22,17 @@ additional_stop_words = [
 sw_set = set(stop_words + additional_stop_words)
 m = MeCab.Tagger('-u ./dotlive.dic')
 
+def get_mecab():
+    return m
 
 def get_vocabulary_dic():
     files = [os.path.join('livechat', f) for f in os.listdir('livechat')
         if os.path.isfile(os.path.join('livechat', f))]
 
+    json_files = [f for f in files if os.path.splitext(f)[1] == '.json']
+
     dic = {}
-    for file in files:
+    for file in json_files:
         vocabulary = {}
 
         keywords = get_keywords(m, file, ['名詞','形容詞','感動詞'])
