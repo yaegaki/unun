@@ -8,6 +8,7 @@ def restore_chat(mecab, id, keywords):
 
     chats = []
     memo = set()
+    count = 0
     for keyword in keywords:
         if keyword not in morpheme_dic:
             continue
@@ -33,7 +34,9 @@ def restore_chat(mecab, id, keywords):
                         chats.append({'msec': obj['msec'], 'sentence': sentence_str})
                     break
 
-        if len(memo) >= 500:
+        # 500単語分登録する
+        count = count + 1
+        if count >= 500:
             break
     
     return chats
