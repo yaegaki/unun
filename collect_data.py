@@ -46,5 +46,3 @@ for file, vocabulary in vocabulary_dic.items():
     aggregate = get_aggregate_words(mecab, id)
     with codecs.open(aggregate_path, 'w', 'utf-8') as f:
         f.write(json.dumps(aggregate, ensure_ascii=False))
-
-    break
