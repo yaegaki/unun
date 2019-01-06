@@ -19,7 +19,7 @@ print('calc vocabulary use rate.')
 vocabulary_use_rate = vocabulary.calc_total_use_rate(vocabulary_dic)
 
 # 出力先ディレクトリがなければ作る
-output_base_dir = './video'
+output_base_dir = './video_src'
 if not os.path.isdir(output_base_dir):
     os.makedirs(output_base_dir)
 
