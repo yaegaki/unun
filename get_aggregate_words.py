@@ -14,7 +14,7 @@ def get_aggregate_words(mecab, id):
     aggregate_msec = 10000
 
     dic = {}
-    with codecs.open('./livechat/{}.json'.format(id)) as f:
+    with codecs.open('./livechat/{}.json'.format(id), 'r', 'utf-8') as f:
         chats = json.loads(f.read())
         for chat in chats:
             message = chat['message']
