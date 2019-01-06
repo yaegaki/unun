@@ -30,19 +30,29 @@ for file, vocabulary in vocabulary_dic.items():
     output_dir = '{}/{}'.format(output_base_dir, id)
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
+    
+    # vocabulary_use_rateは新しい配信が追加されるたびに代わるので毎回作り直すというのが正しいかもしれないが、
+    # そこまで更新する意味はないと思うので新規のものだけを出力する
+    # なお、これによって同じワードクラウドが後から復元できない可能性が高い(どのvocabulary_use_rateから作られたかが保存されないため)が
+    # そのときはそのときで新しく作り直せばいいと思う
 
     # ワードクラウド
     wordcloud_path = '{}/wc.png'.format(output_dir)
-    create_wordcloud(font, vocabulary, vocabulary_use_rate, wordcloud_path)
+    if not os.path.exists(wordcloud_path):
+        create_wordcloud(font, vocabulary, vocabulary_use_rate, wordcloud_path)
 
     # 検索用のチャット抜き出し
     characterize_path = '{}/characterize.json'.format(output_dir)
-    characterize_chat = get_characterize_chat(mecab, id, vocabulary, vocabulary_use_rate)
-    with codecs.open(characterize_path, 'w', 'utf-8') as f:
-        f.write(json.dumps(characterize_chat, ensure_ascii=False))
+    if not os.path.exists(characterize_path):
+        characterize_chat = get_characterize_chat(mecab, id, vocabulary, vocabulary_use_rate)
+        with codecs.open(characterize_path, 'w', 'utf-8') as f:
+            f.write(json.dumps(characterize_chat, ensure_ascii=False))
 
     # ビデオ詳細用の単語抜き出し
     aggregate_path = '{}/aggregate.json'.format(output_dir)
-    aggregate = get_aggregate_words(mecab, id)
-    with codecs.open(aggregate_path, 'w', 'utf-8') as f:
-        f.write(json.dumps(aggregate, ensure_ascii=False))
+    if not os.path.exists(aggregate_path):
+        aggregate = get_aggregate_words(mecab, id)
+        with codecs.open(aggregate_path, 'w', 'utf-8') as f:
+            f.write(json.dumps(aggregate, ensure_ascii=False))
+    
+    print('{} done.'.format(id))
