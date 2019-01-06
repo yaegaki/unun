@@ -2,6 +2,7 @@ import codecs
 import os
 import MeCab
 import codecs
+import unicodedata
 
 from get_keywords import get_keywords
 
@@ -32,19 +33,33 @@ def get_vocabulary_dic():
     json_files = [f for f in files if os.path.splitext(f)[1] == '.json']
 
     dic = {}
+    ignore_set = set()
     for file in json_files:
         vocabulary = {}
 
         keywords = get_keywords(m, file, ['名詞','形容詞','感動詞'])
 
         for keyword in keywords:
-            # ストップワードか長さ1は除外
-            if keyword in sw_set or len(keyword) == 1:
+            # ストップワードは除外
+            if keyword in sw_set:
                 continue
+
 
             if keyword in vocabulary:
                 vocabulary[keyword] += 1
             else:
+                if keyword in ignore_set:
+                    continue
+
+                # 長さ1の場合は漢字のみ許可
+                # 造語の場合、漢字が一文字ずつばらされてしまって除外されてしまうとなかったことになってしまう
+                # それを防ぐために漢字の場合は1文字でも許可する
+                # (原理的には漢字以外でも同じ問題があるがすべてを許可してしまうとあまりにノイズが多すぎるので妥協する)
+                if len(keyword) == 1:
+                    if not unicodedata.name(keyword, '').startswith('CJK UNIFIED'):
+                        ignore_set.add(keyword)
+                        continue
+
                 vocabulary[keyword] = 1
 
         dic[file] = vocabulary
