@@ -47,6 +47,7 @@ def restore_chat(mecab, id, keywords):
                         memo.add(sentence_str)
                         chats.append({'msec': obj['msec'], 'sentence': sentence_str})
                         appended = True
+                    break
         
         if not appended:
             print('warning, not appended - {}'.format(keyword))
