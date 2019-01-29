@@ -1,6 +1,7 @@
 # 配信を特徴となるようなチャットを抜き出す
 import os
 import restore_sentence
+from normalize_neologd import normalize_neologd
 
 def restore_chat(mecab, id, keywords):
     livechat_json_path = './livechat/{}.json'.format(id)
@@ -20,19 +21,35 @@ def restore_chat(mecab, id, keywords):
         # キーワードから復元したチャット
         sentences = restore_sentence.restore_sentence(morpheme_dic, keyword)
 
+        # 登録されたかどうかチェック用
+        appended = False
+
         # 復元したチャットには時間の情報がないのでそこも復元する
         for sentence in sentences:
             # sentenceは単語ごとの配列になっているので結合して文字列にする
             sentence_str = ''.join(sentence)
+            # mecabで'do it'のような単語をパースしたときに固有名詞扱いになって1単語になるものがある
+            # チャットを探すときに都合が悪いのでスペースを削除する
+            sentence_str_for_search = sentence_str.replace(' ', '')
 
             # sentence_strが完全に含まれているチャットを探す
             for obj in objs:
-                original_chat = obj['original']
-                if original_chat.find(sentence_str) >= 0:
-                    if not original_chat in memo:
-                        memo.add(original_chat)
+                # ノーマライズして空白を削除
+                original_chat = normalize_neologd(obj['original']).replace(' ', '')
+                if original_chat.find(sentence_str_for_search) >= 0:
+                    # keywordによっては既に選ばれたsentence_strが候補になる可能性がある
+                    # 例えば'二'というkeywordと'二重'というキーワードがあったとき、同じものが選ばれる可能性がある
+                    # それと元々のチャットのなかにほぼ同じ内容があった場合、形態素解析の都合上かぶってしまうことがある
+                    # '昨日は十五夜だったね' => ['昨日', 'は', '十', '五', '夜', 'だっ', 'た', 'ね', 'EOS', '']
+                    # '十五夜だったね' => ['十五夜', 'だっ', 'た', 'ね', 'EOS', '']
+                    # のように十五夜がバラバラにされた場合、別のsentenceとして表れてしまう
+                    if not sentence_str in memo:
+                        memo.add(sentence_str)
                         chats.append({'msec': obj['msec'], 'sentence': sentence_str})
-                    break
+                        appended = True
+        
+        if not appended:
+            print('warning, not appended - {}'.format(keyword))
 
         # 500単語分登録する
         count = count + 1
